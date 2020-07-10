@@ -12,12 +12,17 @@ var (
 	ErrFailedGetClaim = fmt.Errorf("failed to get token claims")
 )
 
-type Verifier struct {
+// Verifier ...
+type Verifier interface {
+	Verify(token []byte) (jwt JWT, err error)
+}
+
+type verifier struct {
 	key *rsa.PublicKey
 }
 
 // Verify parses and verifies an access token string.
-func (v *Verifier) Verify(token []byte) (jwt JWT, err error) {
+func (v *verifier) Verify(token []byte) (jwt JWT, err error) {
 	var (
 		jwtToken *jwtgo.Token
 		claims   *ClaimsJWT
@@ -52,8 +57,8 @@ func (v *Verifier) Verify(token []byte) (jwt JWT, err error) {
 }
 
 // NewVerifier creates a new Generator verifier.
-func NewVerifier(key *rsa.PublicKey) *Verifier {
-	return &Verifier{
+func NewVerifier(key *rsa.PublicKey) Verifier {
+	return &verifier{
 		key: key,
 	}
 }
