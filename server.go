@@ -29,7 +29,7 @@ type Server struct {
 	errorCreator        ErrorCreator
 	jwtHeaderName       string
 	authHeaderScheme    []byte
-	verifier            verifier
+	verifier            Verifier
 	contextTokenStorage ContextTokenStorage
 }
 
@@ -88,7 +88,7 @@ func NewServer(
 	errorCreator ErrorCreator,
 	jwtHeaderName string,
 	authHeaderScheme []byte,
-	verifier verifier,
+	verifier Verifier,
 	contextTokenStorage ContextTokenStorage,
 ) fasthttp.RequestHandler {
 	s := &Server{
