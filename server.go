@@ -31,6 +31,7 @@ type Server struct {
 	authHeaderScheme    []byte
 	verifier            Verifier
 	contextTokenStorage ContextTokenStorage
+	exceptions          [][]byte
 }
 
 func (s *Server) ServeHTTP(ctx *fasthttp.RequestCtx) {
@@ -42,6 +43,14 @@ func (s *Server) ServeHTTP(ctx *fasthttp.RequestCtx) {
 		errMsg         string
 		token          JWT
 	)
+
+	for _, exception := range s.exceptions {
+		if bytes.EqualFold(exception, ctx.Request.URI().Path()) {
+			// call next http handler
+			s.srv(ctx)
+			return
+		}
+	}
 
 	// peek generator from headers
 	if jwtHeaderValue = ctx.Request.Header.Peek(s.jwtHeaderName); !bytes.Equal(jwtHeaderValue, empty) {
@@ -90,6 +99,7 @@ func NewServer(
 	authHeaderScheme []byte,
 	verifier Verifier,
 	contextTokenStorage ContextTokenStorage,
+	exceptions [][]byte,
 ) fasthttp.RequestHandler {
 	s := &Server{
 		srv:                 srv,
@@ -99,6 +109,7 @@ func NewServer(
 		authHeaderScheme:    authHeaderScheme,
 		verifier:            verifier,
 		contextTokenStorage: contextTokenStorage,
+		exceptions:          exceptions,
 	}
 	return s.ServeHTTP
 }
